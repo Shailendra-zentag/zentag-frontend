@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .bg-zentag-gradient {
+    background: linear-gradient(135deg, #00EEFF 0%, #0051FF 100%);
+  }
+  
+  .bg-zentag-gradient-text {
+    background: linear-gradient(135deg, #00EEFF 0%, #0051FF 100%);
+  }
+  
+  .font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background-color: #0E0E0E;
+  }
+  
+  #root {
+    height: 100%;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* Custom Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0A0A0A;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3A3A3A;
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: #4A4A4A;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: #0A0A0A;
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2A2A2A #0A0A0A;
+  }
+
+  /* Sidebar specific scrollbar */
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: #1A1A1A;
+    border-radius: 2px;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: #2A2A2A;
+  }
+
+  /* Main content scrollbar */
+  .main-content-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .main-content-scroll::-webkit-scrollbar-track {
+    background: #0A0A0A;
+    border-radius: 4px;
+  }
+
+  .main-content-scroll::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 4px;
+    border: 1px solid #1A1A1A;
+  }
+
+  .main-content-scroll::-webkit-scrollbar-thumb:hover {
+    background: #3A3A3A;
+  }
+
+  /* Calendar dropdown scrollbar */
+  .calendar-scroll::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .calendar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .calendar-scroll::-webkit-scrollbar-thumb {
+    background: #373737;
+    border-radius: 2px;
+  }
+}
+
+@layer utilities {
+  .bg-zentag-gradient {
+    background: linear-gradient(135deg, #00EEFF 0%, #0051FF 100%);
+  }
+  
+  .bg-zentag-gradient-text {
+    background: linear-gradient(135deg, #00EEFF 0%, #0051FF 100%);
+  }
+  
+  .font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
