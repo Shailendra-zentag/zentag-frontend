@@ -1,19 +1,19 @@
 import { sportOptions as sports } from "@/constants/AddVideo";
-import { DateRangeSelector } from "../components/ui/date-range-selector";
+import { DateRangeSelector } from "../../components/ui/date-range-selector";
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronDown, X } from "lucide-react";
 import { Dayjs } from "dayjs";
-import SVGIcon from "../components/ui/svg-icon";
+// import SVGIcon from "../../components/ui/svg-icon";
 // import { SVG_PATHS } from "../utils/assets";
-import sportSelectorIcon from "../../src/assets/components/Header/sportSelectorIcon.svg";
+// import sportSelectorIcon from "../../src/assets/components/Header/sportSelectorIcon.svg";
 
 interface DashboardHeaderProps {
   title: string;
   onAddVideoFeed?: () => void;
 }
-console.log(sportSelectorIcon);
+// console.log(sportSelectorIcon);
 const SportSelectorIcon = () => (
 
   <svg

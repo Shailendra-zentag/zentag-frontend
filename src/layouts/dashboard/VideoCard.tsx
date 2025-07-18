@@ -1,17 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { VideoData } from "../../mocks/dashboard_mockData/mockVideos";
 import {
-  Play,
-  Download,
-  Share2,
-  Edit,
-  Trash2,
-  EyeIcon,
-} from "lucide-react";
-import { VideoData } from "../../mockData/dashboard_mockData/mockVideos";
-
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import VideoCardOptions from "./VideoCardOptions";
 interface VideoCardProps {
   video: VideoData;
   onClick?: () => void;
@@ -22,35 +20,60 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick }) => {
   const isLive = video.status.name === "Live";
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    };
+   const truncateText = (text: string, maxLength: number = 50) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const handleDropdownToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when clicking dropdown toggle
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleDropdownClose = () => {
+    setShowDropdown(false);
+  };
+
+  // Placeholder functions for dropdown actions
+  const handleEdit = () => {
+    console.log("Edit stream clicked for:", video.title);
+    handleDropdownClose();
+  };
+
+  const handleExport = () => {
+    console.log("Export JSON clicked for:", video.title);
+    handleDropdownClose();
+  };
+
+  const handleViewDetails = () => {
+    console.log("Views details clicked for:", video.title);
+    handleDropdownClose();
+  };
+
+  const handleActivityLogs = () => {
+    console.log("Activity logs clicked for:", video.title);
+    handleDropdownClose();
+  };
+
+  const handleDelete = () => {
+    console.log("Delete clicked for:", video.title);
+    handleDropdownClose();
+  };
 
   return (
-    <Card
-      className="bg-[#1A1B1E] overflow-hidden group cursor-pointer transition-all duration-300 border border-transparent hover:border-gray-600"
-      style={{ borderRadius: "12px" }}
-      onClick={onClick}
-    >
+    <TooltipProvider>
+      <Card
+        className="bg-[#1A1B1E] overflow-hidden group cursor-pointer transition-all duration-300 border border-transparent hover:border-gray-600"
+        style={{ borderRadius: "12px" }}
+        onClick={onClick}
+      >
       <div className="relative">
         {/* Thumbnail */}
         <div
           className={`aspect-video bg-gray-700 overflow-hidden ${
             isLive ? "border-2 border-red-500" : ""
           }`}
-          style={{ borderRadius: "12px 12px 0 0" }}
+          style={{ borderRadius: "12px 12px 12px 12px" }}
         >
           <img
             src={video.thumbnail}
@@ -79,12 +102,9 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick }) => {
         {/* Dropdown for More options (3 dots) - repositioned */}
         <div className="absolute top-2 right-2 z-10" ref={dropdownRef}>
           <div
-            className="w-7 h-6 bg-[#252525] hover:bg-[#3A3B3E] flex items-center justify-center cursor-pointer"
+            className="cursor-pointer hover:opacity-80 transition-opacity"
             style={{ borderRadius: "5px" }}
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent card click when clicking dropdown toggle
-              setShowDropdown(!showDropdown);
-            }}
+            onClick={handleDropdownToggleClick}
           >
             {/* The SVG for 3 dots */}
             <svg
@@ -101,31 +121,16 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick }) => {
             </svg>
           </div>
 
-          {showDropdown && (
-            <div className="absolute z-50 top-10 right-0 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg py-2 shadow-xl min-w-[150px] calendar-scroll">
-              <button className="w-full px-4 py-2 text-left text-white hover:bg-[#2A2A2A] transition-colors flex items-center gap-2">
-                <Edit size={14} />
-                Edit stream
-              </button>
-              <button className="w-full px-4 py-2 text-left text-white hover:bg-[#2A2A2A] transition-colors flex items-center gap-2">
-                <Download size={14} />
-                Export JSON
-              </button>
-              <button className="w-full px-4 py-2 text-left text-white hover:bg-[#2A2A2A] transition-colors flex items-center gap-2">
-                <EyeIcon size={14} />
-                Views details
-              </button>
-              <button className="w-full px-4 py-2 text-left text-white hover:bg-[#2A2A2A] transition-colors flex items-center gap-2">
-                <Share2 size={14} />
-                Activity logs
-              </button>
-              <hr className="border-[#2A2A2A] my-1" />
-              <button className="w-full px-4 py-2 text-left text-red-400 hover:bg-[#2A2A2A] transition-colors flex items-center gap-2">
-                <Trash2 size={14} />
-                Delete
-              </button>
-            </div>
-          )}
+         {/* Render the VideoCardOptions component */}
+            <VideoCardOptions
+              isOpen={showDropdown}
+              onClose={handleDropdownClose}
+              onEdit={handleEdit}
+              onExport={handleExport}
+              onViewDetails={handleViewDetails}
+              onActivityLogs={handleActivityLogs}
+              onDelete={handleDelete}
+            />
         </div>
 
         {/* Live/Status Badge - positioned at bottom left inside thumbnail */}
@@ -149,33 +154,46 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick }) => {
       </div>
 
       <CardContent className="p-4">
-        <h3 className="font-semibold text-sm mb-2 line-clamp-2 text-white leading-5">
-          {video.title}
-        </h3>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <h3 className="font-semibold text-sm mb-2 line-clamp-2 text-white leading-5 cursor-help">
+                {truncateText(video.title)}
+              </h3>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{video.title}</p>
+            </TooltipContent>
+          </Tooltip>
         <p className="text-xs text-gray-400 mb-3">
           {video.date} / {video.time}
         </p>
-
         <div className="flex items-center justify-between">
-          <Badge
-            className="text-xs font-medium px-2 py-1 rounded-md"
-            style={{
-              backgroundColor: video.category.color,
-              color: "#FFF",
-            }}
-          >
-            {video.category.name}
-          </Badge>
-
-          <Badge
-            variant="secondary"
-            className="bg-[#252525] text-gray-300 text-xs rounded-md"
-          >
-            {video.clips} clips
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  className="text-xs font-medium px-2 py-1 rounded-md cursor-help"
+                  style={{
+                    backgroundColor: video.category.color,
+                    color: "#FFF",
+                  }}
+                >
+                  {video.category.name}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{video.category.name}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Badge
+              variant="secondary"
+              className="bg-[#252525] text-gray-300 text-xs rounded-md"
+            >
+              {video.clips} clips
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 };
 

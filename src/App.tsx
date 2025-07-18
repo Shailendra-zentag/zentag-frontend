@@ -14,6 +14,7 @@ const Login = lazy(() => import("./pages/LoginPage"));
 const Signup = lazy(() => import("./pages/SignupPage"));
 const LoginSSO = lazy(() => import("./pages/SSOPage"));
 const Dashboard = lazy(() => import("./pages/DashboardPage"));
+const Clips = lazy(() => import("./pages/ClipsPage"));
 
 type ErrorBoundaryProps = { children: React.ReactNode };
 type ErrorBoundaryState = { hasError: boolean; error: Error | null };
@@ -72,6 +73,7 @@ return (
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/clips" element={<Clips />} />
               </Route>
 
               <Route
