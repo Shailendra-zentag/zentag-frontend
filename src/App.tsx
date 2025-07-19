@@ -73,7 +73,7 @@ return (
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/clips" element={<Clips />} />
+                <Route path="/clips" element={<Clips page="clips"/>} />
               </Route>
 
               <Route

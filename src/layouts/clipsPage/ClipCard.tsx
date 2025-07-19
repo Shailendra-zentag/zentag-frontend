@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,76 +10,113 @@ import {
 } from "@/components/ui/tooltip";
 import { ClipData } from "@/mocks/clips_mockData/mockClips";
 import ClipCardOptions from "./ClipCardOptions";
+import SvgIcon from "@/components/ui/svg-icon";
+import { IconNames } from "@/assets/icons";
+import { useResponsive } from "@/hooks/useResponsive";
 
 interface ClipCardProps {
     clip: ClipData;
+    isSelected: boolean;
     onSelect?: (id: string, selected: boolean) => void;
     onClick?: () => void;
+    lazyLoad?: boolean;
 }
 
-const ClipCard: React.FC<ClipCardProps> = ({ clip, onSelect, onClick }) => {
+const ClipCard: React.FC<ClipCardProps> = memo(({
+    clip,
+    isSelected,
+    onSelect,
+    onClick,
+    lazyLoad = true
+}) => {
     const [showDropdown, setShowDropdown] = useState(false);
-    const [isSelected, setIsSelected] = useState(clip.selected || false);
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const { isMobile, isTablet } = useResponsive();
 
-    const handleCheckboxChange = (checked: boolean) => {
-        setIsSelected(checked);
+    const handleDropdownToggle = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowDropdown(!showDropdown);
+    }, [showDropdown]);
+
+    const handleCheckboxChange = useCallback((checked: boolean) => {
         onSelect?.(clip.id, checked);
-    };
+    }, [clip.id, onSelect]);
 
-    const truncateText = (text: string, maxLength: number = 30) => {
+    const handleCardClick = useCallback(() => {
+        onClick?.();
+    }, [onClick]);
+
+    const truncateText = useCallback((text: string, maxLength: number = 30) => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + "...";
-    };
+    }, []);
 
-    //   const renderStars = (rating: number) => {
-    //     return Array.from({ length: 5 }, (_, index) => (
-    //       <svg
-    //         key={index}
-    //         width="12"
-    //         height="12"
-    //         viewBox="0 0 12 12"
-    //         fill="none"
-    //         xmlns="http://www.w3.org/2000/svg"
-    //         className="inline"
-    //       >
-    //         <path
-    //           d="M5.46973 1.32049C5.66167 0.842504 6.33833 0.842503 6.53027 1.32048L7.67669 4.17532C7.75843 4.37886 7.94946 4.51766 8.16831 4.5325L11.2377 4.74062C11.7516 4.77546 11.9607 5.419 11.5654 5.74925L9.20456 7.72175C9.03623 7.86239 8.96327 8.08696 9.01678 8.29968L9.76733 11.2831C9.893 11.7827 9.34557 12.1804 8.90934 11.9065L6.30383 10.2708C6.11807 10.1541 5.88193 10.1541 5.69617 10.2707L3.09066 11.9065C2.65443 12.1804 2.107 11.7827 2.23267 11.2831L2.98322 8.29968C3.03674 8.08696 2.96377 7.86239 2.79544 7.72175L0.434597 5.74925C0.0393227 5.41899 0.24842 4.77546 0.762323 4.74062L3.8317 4.5325C4.05054 4.51766 4.24157 4.37886 4.32331 4.17532L5.46973 1.32049Z"
-    //           fill={index < rating ? "#FFF" : "#666"}
-    //         />
-    //       </svg>
-    //     ));
-    //   };
+    const handleImageLoad = useCallback(() => {
+        setImageLoaded(true);
+    }, []);
+
+    const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+        setImageError(true);
+        const target = e.target as HTMLImageElement;
+        target.src = "/api/placeholder/320/180";
+    }, []);
+
+    // Responsive grid adjustments
+    const getResponsiveClasses = () => {
+        if (isMobile) return "text-sm";
+        if (isTablet) return "text-base";
+        return "text-base";
+    };
 
     return (
         <TooltipProvider>
             <Card
-                className="bg-[#1A1B1E] overflow-hidden group cursor-pointer transition-all duration-300 border border-transparent hover:border-gray-600"
+                key={clip.id}
+                className={`
+                    bg-[#1A1B1E] overflow-hidden group cursor-pointer transition-all duration-300 
+                    border border-transparent hover:border-gray-600 
+                    ${getResponsiveClasses()}
+                    `}
+                // ${isSelected ? "ring-2 ring-[#00BBFF]" : ""}
                 style={{ borderRadius: "12px" }}
-                onClick={onClick}
+                onClick={handleCardClick}
             >
                 <div className="relative">
                     {/* Thumbnail with selection border */}
                     <div
-                        className={`aspect-video bg-gray-700 overflow-hidden relative ${isSelected ? "border-2 border-[#00BBFF] rounded-xl" : ""
-                            }`}
+                        className={`
+                            aspect-video bg-gray-700 overflow-hidden relative
+                            ${isSelected ? "border-2 border-[#00BBFF] rounded-xl" : ""}
+                        `}
                         style={{ borderRadius: "12px 12px 12px 12px" }}
                     >
-                        <img
-                            src={clip.thumbnail}
-                            alt={clip.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.src = "/api/placeholder/320/180";
-                            }}
-                        />
+                        {/* Image with loading states */}
+                        <div className="relative w-full h-full">
+                            {!imageLoaded && !imageError && (
+                                <div className="absolute inset-0 bg-gray-700 animate-pulse" />
+                            )}
+                            <img
+                                src={clip.thumbnail}
+                                alt={clip.title}
+                                className={`
+                                    w-full h-full object-cover group-hover:scale-105 transition-transform duration-300
+                                    ${imageLoaded ? "opacity-100" : "opacity-0"}
+                                `}
+                                loading={lazyLoad ? "lazy" : "eager"}
+                                onLoad={handleImageLoad}
+                                onError={handleImageError}
+                            />
+                        </div>
 
                         {/* Editor Badge - Top Left (next to checkbox) */}
                         <div className="absolute top-2 left-2 z-10">
                             <Badge
-                                className="text-xs font-medium px-2 py-1 rounded-md"
-                                style={{
+                                className={`
+                                    font-medium rounded-md
+                                    ${isMobile ? "text-xs px-1.5 py-0.5" : "text-xs px-2 py-1"}
+                                `} style={{
                                     backgroundColor: "#252525",
                                     color: "#FFF",
                                 }}
@@ -105,83 +142,36 @@ const ClipCard: React.FC<ClipCardProps> = ({ clip, onSelect, onClick }) => {
                             <div
                                 className="cursor-pointer hover:opacity-80 transition-opacity"
                                 style={{ borderRadius: "5px" }}
-                                onClick={(e) => {
-                                    e.stopPropagation(); // Prevent card click when clicking dropdown toggle
-                                    setShowDropdown(!showDropdown);
-                                }}
+                                onClick={handleDropdownToggle}
                             >
-                                {/* The SVG for 3 dots */}
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="30"
-                                    height="24"
-                                    viewBox="0 0 30 24"
-                                    fill="none"
-                                >
-                                    <rect width="30" height="24" rx="5" fill="#252525" />
-                                    <circle cx="8" cy="12" r="2" fill="#D9D9D9" />
-                                    <circle cx="15" cy="12" r="2" fill="#D9D9D9" />
-                                    <circle cx="22" cy="12" r="2" fill="#D9D9D9" />
-                                </svg>
+                                <SvgIcon
+                                    name={IconNames.THREE_DOTS}
+                                    width={isMobile ? 24 : 30}
+                                    height={isMobile ? 18 : 24}
+                                />
                             </div>
 
                             {/* ClipCardOptions component for the dropdown */}
                             <ClipCardOptions
                                 showDropdown={showDropdown}
                                 setShowDropdown={setShowDropdown}
+                                dropdownRef={dropdownRef}
                             />
                         </div>
                     </div>
                 </div>
 
-                <CardContent className="p-4">
+                <CardContent className={`${isMobile ? "p-3" : "p-4"}`}>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="flex items-center gap-2 mb-1">
                                 {clip.hasAI && (
                                     <div className="flex-shrink-0 mb-2">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="20"
-                                            height="13"
-                                            viewBox="0 0 20 13"
-                                            fill="none"
-                                        >
-                                            <path
-                                                fillRule="evenodd"
-                                                clipRule="evenodd"
-                                                d="M5.8861 0C6.71112 0 7.4522 0.15989 8.10897 0.47983C8.55076 0.689648 8.93788 0.954157 9.27103 1.2726V0.252657L13.0602 0.252657L13.0602 12.5299H9.27103V11.5342C8.94828 11.8394 8.56945 12.0957 8.13419 12.3025C7.46048 12.6224 6.71112 12.7825 5.8861 12.7825C4.75773 12.7825 3.74717 12.5046 2.8546 11.9489C1.97896 11.3931 1.27986 10.6352 0.757651 9.6753C0.252549 8.71538 0 7.62062 0 6.39124C0 5.16187 0.252549 4.06711 0.757651 3.10717C1.27986 2.14725 1.97896 1.38935 2.8546 0.833578C3.74717 0.277859 4.75773 0 5.8861 0ZM5.66688 3.97625C5.10552 3.65219 4.40395 4.05725 4.40395 4.70546V8.05998C4.40395 8.70818 5.10552 9.11327 5.66688 8.78918L8.57209 7.11203C9.13346 6.78791 9.13346 5.97753 8.57209 5.65341L5.66688 3.97625Z"
-                                                fill="url(#paint0_linear_ai_icon)"
-                                            />
-                                            <path
-                                                d="M20.0001 12.5302H16.1349L16.1349 0.25293L20.0001 0.25293V12.5302Z"
-                                                fill="url(#paint1_linear_ai_icon)"
-                                            />
-                                            <defs>
-                                                <linearGradient
-                                                    id="paint0_linear_ai_icon"
-                                                    x1="25.1839"
-                                                    y1="6.46706"
-                                                    x2="7.31798"
-                                                    y2="-11.7867"
-                                                    gradientUnits="userSpaceOnUse"
-                                                >
-                                                    <stop stopColor="#00EEFF" />
-                                                    <stop offset="1" stopColor="#0051FF" />
-                                                </linearGradient>
-                                                <linearGradient
-                                                    id="paint1_linear_ai_icon"
-                                                    x1="25.1844"
-                                                    y1="6.46733"
-                                                    x2="7.31854"
-                                                    y2="-11.7864"
-                                                    gradientUnits="userSpaceOnUse"
-                                                >
-                                                    <stop stopColor="#00EEFF" />
-                                                    <stop offset="1" stopColor="#0051FF" />
-                                                </linearGradient>
-                                            </defs>
-                                        </svg>
+                                        <SvgIcon
+                                            name={IconNames.AI_ICON}
+                                            width={20}
+                                            height={13}
+                                        />
                                     </div>
                                 )}
                                 {/* Event type icon */}
@@ -231,8 +221,11 @@ const ClipCard: React.FC<ClipCardProps> = ({ clip, onSelect, onClick }) => {
                                         </svg>
                                     </div>
                                 )} */}
-                                <h3 className="font-bold text-base line-clamp-1 text-white leading-5 cursor-help flex-1">
-                                    {truncateText(clip.title)}
+                                <h3 className={`
+                                    font-bold line-clamp-1 text-white leading-5 cursor-help flex-1
+                                    ${isMobile ? "text-sm" : "text-base"}
+                                `}>
+                                    {truncateText(clip.title, isMobile ? 25 : 30)}
                                 </h3>
                             </div>
                         </TooltipTrigger>
@@ -321,6 +314,6 @@ const ClipCard: React.FC<ClipCardProps> = ({ clip, onSelect, onClick }) => {
             </Card>
         </TooltipProvider>
     );
-};
+});
 
 export default ClipCard;

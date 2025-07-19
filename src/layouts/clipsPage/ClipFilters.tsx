@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-// import { DateRangeSelector } from "@/components/ui/date-range-selector";
+import { DateRangeSelector } from "@/components/ui/date-range-selector";
 import { SearchBar } from "../../containers/filters/SearchBar";
 import { EventsSection } from "../../containers/filters/EventsSection";
 import { AspectRatioSection } from "../../containers/filters/AspectRatioSection";
 import { StatusSection } from "../../containers/filters/StatusSection";
 import { RatingSection } from "../../containers/filters/RatingSection";
 import { SortBySection } from "../../containers/filters/SortBySection";
-// import { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 
 interface ClipFiltersProps {
   onFilterChange?: (filters: any) => void;
@@ -21,9 +21,9 @@ const ClipFilters: React.FC<ClipFiltersProps> = ({ onFilterChange }) => {
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("time-desc");
-  //  const [dateRange, setDateRange] = useState<
-  //     [Dayjs | null, Dayjs | null] | null
-  //   >(null);
+   const [dateRange, setDateRange] = useState<
+      [Dayjs | null, Dayjs | null] | null
+    >(null);
 
   const handleEventChange = (eventId: string, checked: boolean) => {
     let newSelection: string[];
@@ -119,14 +119,14 @@ const ClipFilters: React.FC<ClipFiltersProps> = ({ onFilterChange }) => {
       />
 
       {/* Date Range */}
-      {/* <div className="mb-6">
+      <div className="mb-6">
         <h3 className="text-xs font-bold text-white mb-3">Date Range</h3>
         <DateRangeSelector
           value={dateRange}
           onChange={setDateRange}
           placeholder="Select date range"
         />
-      </div> */}
+      </div>
 
       {/* Sort By Section */}
       <SortBySection sortBy={sortBy} onSortChange={setSortBy} />

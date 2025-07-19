@@ -14,10 +14,11 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ClipData, mockClipData } from "@/mocks/clips_mockData/mockClips";
+import { mockHighlightsData, HighlightSection } from "@/mocks/clips_mockData/mockHighlights";
 import { limitOptions } from "@/constants/Filter";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const Clips: React.FC = () => {
+const Clips: React.FC = ({ page }) => {
     const navigate = useNavigate();
     const [clips, setClips] = useState<ClipData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -25,10 +26,9 @@ const Clips: React.FC = () => {
     const [activeTab, setActiveTab] = useState("clips");
     const [limitPerPage, setLimitPerPage] = useState("20");
     const [currentPage, setCurrentPage] = useState(1);
-
-    // Mock timer state
-    //   const [timer, setTimer] = useState("00:57:19");
-    //   const [isLive, setIsLive] = useState(true);
+    const [highlightSections, setHighlightSections] = useState<
+        HighlightSection[]
+    >([]);
 
     useEffect(() => {
         // Simulate loading
@@ -40,23 +40,52 @@ const Clips: React.FC = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    // Mock live timer update
-    //   useEffect(() => {
-    //     if (isLive) {
-    //       const interval = setInterval(() => {
-    //         setTimer((prev) => {
-    //           const [hours, minutes, seconds] = prev.split(":").map(Number);
-    //           const totalSeconds = hours * 3600 + minutes * 60 + seconds + 1;
-    //           const newHours = Math.floor(totalSeconds / 3600);
-    //           const newMinutes = Math.floor((totalSeconds % 3600) / 60);
-    //           const newSeconds = totalSeconds % 60;
-    //           return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(2, "0")}:${String(newSeconds).padStart(2, "0")}`;
-    //         });
-    //       }, 1000);
+    useEffect(() => {
+        // Simulate loading
+        const timer = setTimeout(() => {
+            setHighlightSections(mockHighlightsData);
+            setLoading(false);
+        }, 1000);
 
-    //       return () => clearInterval(interval);
-    //     }
-    //   }, [isLive]);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const renderClipsGrid = (clips: ClipData[]) => {
+        if (loading) {
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {Array.from({ length: 8 }).map((_, index) => (
+                        <ShimmerCard key={index} />
+                    ))}
+                </div>
+            );
+        }
+
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {clips.map((clip) => (
+                    <ClipCard
+                        key={clip.id}
+                        clip={clip}
+                        onSelect={handleClipSelect}
+                        page={page}
+                        activetab={activeTab}
+                        onClick={() => console.log("Open clip:", clip.id)}
+                    />
+                ))}
+            </div>
+        );
+    };
+
+    const renderSection = (section: HighlightSection) => (
+        <div key={section.id} className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+                <h2 className="text-xl font-bold text-white">{section.title}</h2>
+                <span className="text-xl font-medium text-white">{section.count}</span>
+            </div>
+            {renderClipsGrid(section.clips)}
+        </div>
+    );
 
     const handleClipSelect = (clipId: string, selected: boolean) => {
         const newSelectedClips = new Set(selectedClips);
@@ -70,8 +99,10 @@ const Clips: React.FC = () => {
 
     const handleSelectAll = () => {
         if (selectedClips.size === currentClips.length) {
+            // If all current clips are selected, deselect all
             setSelectedClips(new Set());
         } else {
+            // Select all current clips
             setSelectedClips(new Set(currentClips.map((clip) => clip.id)));
         }
     };
@@ -86,7 +117,6 @@ const Clips: React.FC = () => {
 
     // Pagination
     const itemsPerPage = parseInt(limitPerPage);
-    // const totalPages = Math.ceil(totalClips / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentClips = clips.slice(startIndex, endIndex);
@@ -95,17 +125,19 @@ const Clips: React.FC = () => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + "...";
     };
-
+    console.log("Current Clips:", mockHighlightsData);
     const videoTitle = "Bangladesh vs Bhutan | FIFA Friendly match";
 
     return (
         <TooltipProvider>
-            {/* <div className="min-h-screen bg-[#18191B] flex"> */}
-                    <div className="flex h-screen bg-[#18191B] text-white">
+            {/* <div className="h-screen bg-[#18191B] text-white flex overflow-hidden"> */}
+            <div className="h-screen bg-[#18191B] text-white flex overflow-x-auto overflow-y-auto">
 
                 <Sidebar />
 
-                <div className="flex-1 flex flex-col">
+                {/* <div className="flex-1 flex flex-col overflow-hidden"> */}
+                <div className="flex-1 flex flex-col min-h-screen overflow-auto">
+
                     {/* Header */}
                     <div className="bg-[#18191B] border-b border-[#252525] px-8 py-6">
                         <div className="flex items-center justify-between mb-4">
@@ -258,7 +290,8 @@ const Clips: React.FC = () => {
                     </div>
 
                     {/* Main Content Area with Sidebar and Content */}
-                    <div className="flex-1 flex">
+                    {/* <div className="flex-1 flex overflow-hidden"> */}
+                    <div className="flex-1 flex min-h-0 overflow-hidden">
                         {/* Filters Sidebar */}
                         <div className="w-80 bg-[#18191B] border-r border-[#252525] flex flex-col">
                             {/* Clip Count above Filters */}
@@ -271,7 +304,7 @@ const Clips: React.FC = () => {
                                         onClick={handleSelectAll}
                                         className="text-sm text-white underline hover:text-gray-300"
                                     >
-                                        Select all
+                                        {selectedClips.size === currentClips.length ? "Deselect all" : "Select all"}
                                     </button>
                                     <button
                                         onClick={handleClear}
@@ -282,90 +315,88 @@ const Clips: React.FC = () => {
                                 </div>
                             </div>
 
-                            <ClipFilters />
+                            <ClipFilters page={page} activeTab={activeTab} />
                         </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 flex flex-col">
+                        {/* <div className="flex-1 flex flex-col overflow-hidden"> */}
+                        {/* <div className="flex-1 flex flex-col min-h-screen overflow-auto"> */}
+                        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
                             {/* Action Buttons Bar */}
-                            <div className="bg-[#18191B] border-b border-[#252525] px-6 py-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-5">
-                                        <Button
-                                            variant="outline"
-                                            className="bg-[#252525] border-[#00BBFF] text-white hover:bg-[#00BBFF]/10 h-11 px-32 rounded-xl"
-                                            disabled={selectedCount === 0}
-                                        >
-                                            <span className="text-xl font-bold text-white">
-                                                +
-                                            </span> Add to highlight
-                                        </Button>
-                                        <span className="text-white text-sm">or</span>
-                                        <Button
-                                            variant="outline"
-                                            className="bg-[#252525] border-[#00BBFF] text-white hover:bg-[#00BBFF]/10 h-11 px-32 rounded-xl"
-                                            disabled={selectedCount === 0}
-                                        >
-                                            <span className="text-xl font-bold text-white">
-                                                +
-                                            </span> Add to story
-                                        </Button>
-                                    </div>
+                            {activeTab !== "highlights" && (
+                                <div className="bg-[#18191B] border-b border-[#252525] px-6 py-4">
+                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                        <div className="flex flex-wrap items-center gap-5">
+                                            <Button
+                                                variant="outline"
+                                                className="bg-[#252525] border-[#00BBFF] text-white hover:bg-[#00BBFF]/10 h-11 px-28 rounded-xl"
+                                                disabled={selectedCount === 0}
+                                            >
+                                                <span className="text-xl font-bold text-white">+</span> Add to highlight
+                                            </Button>
+                                            <span className="text-white text-sm">or</span>
+                                            <Button
+                                                variant="outline"
+                                                className="bg-[#252525] border-[#00BBFF] text-white hover:bg-[#00BBFF]/10 h-11 px-28 rounded-xl"
+                                                disabled={selectedCount === 0}
+                                            >
+                                                <span className="text-xl font-bold text-white">+</span> Add to story
+                                            </Button>
+                                        </div>
 
-                                    <div className="flex items-center gap-6 text-sm text-white">
-                                        {/* <span>Selected clips: {selectedCount}</span> */}
-                                        {/* <span>Total clips: {totalClips}</span> */}
-                                        <div className="flex items-center gap-4">
-                                            <span>
-                                                Total duration:{" "}
-                                                <span className="font-bold">{totalDuration}</span>
-                                            </span>
+                                        <div className="flex items-center gap-6 text-sm text-white flex-wrap justify-end">
+                                            <div className="flex items-center gap-4">
+                                                <span>
+                                                    Total duration: <span className="font-bold">{totalDuration}</span>
+                                                </span>
 
-                                            {/* Pagination next to Total Duration */}
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="w-10 h-10 border border-[#252525] rounded-lg hover:bg-[#252525]"
-                                                >
-                                                    <ChevronLeft className="w-4 h-4 text-white" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="w-10 h-10 bg-[#252525] border border-white rounded-lg"
-                                                >
-                                                    <span className="text-white text-sm">1</span>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="w-10 h-10 bg-[#252525] rounded-lg hover:bg-[#3A3B3E]"
-                                                >
-                                                    <span className="text-white text-sm">...</span>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="w-10 h-10 bg-[#252525] rounded-lg hover:bg-[#3A3B3E]"
-                                                >
-                                                    <span className="text-white text-sm">135</span>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="w-10 h-10 border border-[#252525] rounded-lg hover:bg-[#252525]"
-                                                >
-                                                    <ChevronRight className="w-4 h-4 text-white" />
-                                                </Button>
+                                                {/* Pagination next to Total Duration */}
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="w-10 h-10 border border-[#252525] rounded-lg hover:bg-[#252525]"
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4 text-white" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="w-10 h-10 bg-[#252525] border border-white rounded-lg"
+                                                    >
+                                                        <span className="text-white text-sm">1</span>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="w-10 h-10 bg-[#252525] rounded-lg hover:bg-[#3A3B3E]"
+                                                    >
+                                                        <span className="text-white text-sm">...</span>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="w-10 h-10 bg-[#252525] rounded-lg hover:bg-[#3A3B3E]"
+                                                    >
+                                                        <span className="text-white text-sm">135</span>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="w-10 h-10 border border-[#252525] rounded-lg hover:bg-[#252525]"
+                                                    >
+                                                        <ChevronRight className="w-4 h-4 text-white" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
+                            )}
                             {/* Content */}
-                            <div className="flex-1 p-6">
+                            {/* <div className="flex-1 overflow-y-auto p-6"> */}
+                            <div className="flex-1 overflow-y-auto p-6 min-h-0">
+
                                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                                     <TabsContent value="clips" className="mt-0">
                                         {loading ? (
@@ -379,10 +410,8 @@ const Clips: React.FC = () => {
                                                 {currentClips.map((clip) => (
                                                     <ClipCard
                                                         key={clip.id}
-                                                        clip={{
-                                                            ...clip,
-                                                            selected: selectedClips.has(clip.id),
-                                                        }}
+                                                        clip={clip}
+                                                        isSelected={selectedClips.has(clip.id)}
                                                         onSelect={handleClipSelect}
                                                         onClick={() =>
                                                             console.log("Clip clicked:", clip.id)
@@ -394,7 +423,11 @@ const Clips: React.FC = () => {
                                     </TabsContent>
 
                                     <TabsContent value="highlights" className="mt-0">
-                                        <div className="text-center text-white py-12">
+                                        {/* Sections */}
+                                        <div className="space-y-12">
+                                            {highlightSections.map(renderSection)}
+                                        </div>
+                                        {/* <div className="text-center text-white py-12">
                                             <h3 className="text-xl font-medium mb-2">
                                                 No highlights yet
                                             </h3>
@@ -402,7 +435,7 @@ const Clips: React.FC = () => {
                                                 Select clips and add them to highlights to see them
                                                 here.
                                             </p>
-                                        </div>
+                                        </div> */}
                                     </TabsContent>
 
                                     <TabsContent value="web-stories" className="mt-0">
@@ -430,16 +463,6 @@ const Clips: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Get Support Button */}
-                    {/* <div className="fixed bottom-8 right-8">
-                    <Button
-                    variant="outline"
-                    className="bg-white border-[#00BBFF] text-black hover:bg-gray-100 h-11 px-6"
-                    >
-                    Get support
-                    </Button>
-                </div> */}
                 </div>
             </div>
         </TooltipProvider>
