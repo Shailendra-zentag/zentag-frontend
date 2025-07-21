@@ -2,7 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   LogOut,
 } from "lucide-react";
-import {sidebarItems,profileMenuItems} from "../../constants/DashboardPage"
+import { useNavigate, useLocation } from "react-router-dom";
+import { CloudIcon } from "../../constants/DashboardPage";
+import { HighlightsIcon } from "../../constants/DashboardPage";
+import { sidebarItems, profileMenuItems } from "../../constants/DashboardPage"
 
 const AIIcon = () => (
   <svg
@@ -52,7 +55,8 @@ const AIIcon = () => (
 const Sidebar: React.FC = () => {
   const [showProfilePopover, setShowProfilePopover] = useState(false);
   const profilePopoverRef = useRef<HTMLDivElement>(null);
-
+  const navigate = useNavigate();
+  const location = useLocation();
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -84,25 +88,32 @@ const Sidebar: React.FC = () => {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 space-y-6">
-        {sidebarItems.map((item, index) => (
-          <div
-            key={index}
-            className="flex flex-col items-center cursor-pointer group"
-          >
+        {sidebarItems.map((item, index) => {
+          const isActive = location.pathname === item.path ||
+            (item.path === "/dashboard" && location.pathname === "/");
+          return (
             <div
-              className={`p-3 rounded-lg transition-colors ${
-                item.active ? "bg-[#252525]" : "hover:bg-[#252525]"
-              }`}
+              key={index}
+              className="flex flex-col items-center cursor-pointer group"
+              onClick={() => navigate(item.path)}
             >
-              <item.icon className="w-6 h-6 text-white" />
+              <div
+                className={`p-3 rounded-lg transition-colors ${isActive ? "bg-[#252525]" : "hover:bg-[#252525]"
+                  }`}
+              >
+                {item.icon === HighlightsIcon || item.icon === CloudIcon ? (
+                  <item.icon />
+                ) : (
+                  <item.icon className="w-6 h-6 text-white" />
+                )}
+              </div>
+              <span className="text-white text-xs mt-2 text-center">
+                {item.label}
+              </span>
             </div>
-            <span className="text-white text-xs mt-2 text-center">
-              {item.label}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </nav>
-
       {/* User Profile */}
       <div
         className="p-4 flex flex-col items-center relative"
@@ -110,7 +121,7 @@ const Sidebar: React.FC = () => {
       >
         <button
           onClick={() => setShowProfilePopover(!showProfilePopover)}
-          className="w-12 h-12 bg-[#0F9488] rounded-full flex items-center justify-center mb-2 hover:bg-[#0F9488] transition-colors"
+          className="w-12 h-12 bg-gradient-to-r from-[#00BBFF] to-[#0051FF] rounded-full flex items-center justify-center mb-2 hover:bg-[#0F9488] transition-colors"
         >
           <span className="text-white text-lg font-medium">S</span>
         </button>
@@ -142,7 +153,7 @@ const Sidebar: React.FC = () => {
               {/* User Info Section */}
               <div className="px-4 py-3 border-b border-[#373737]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#14B8A6] rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-r from-[#00BBFF] to-[#0051FF] rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-medium">S</span>
                   </div>
                   <div>
@@ -157,7 +168,7 @@ const Sidebar: React.FC = () => {
               {/* Logout */}
               <button
                 className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-[#373737] transition-colors text-left"
-                 onClick={handleLogout}
+                onClick={handleLogout}
               >
                 <LogOut className="w-5 h-5 text-gray-400" />
                 <span className="text-sm">Logout</span>

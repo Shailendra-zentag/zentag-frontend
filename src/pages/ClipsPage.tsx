@@ -16,9 +16,14 @@ import {
 import { ClipData, mockClipData } from "@/mocks/clips_mockData/mockClips";
 import { mockHighlightsData, HighlightSection } from "@/mocks/clips_mockData/mockHighlights";
 import { limitOptions } from "@/constants/Filter";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import RefreshButton from "@/containers/filters/RefreshButton";
+import Pagination from "@/containers/filters/Pagination";
 
-const Clips: React.FC = ({ page }) => {
+interface ClipsProps {
+  page: string;
+}
+
+const Clips: React.FC<ClipsProps> = ({ page }) => {
     const navigate = useNavigate();
     const [clips, setClips] = useState<ClipData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -29,6 +34,7 @@ const Clips: React.FC = ({ page }) => {
     const [highlightSections, setHighlightSections] = useState<
         HighlightSection[]
     >([]);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         // Simulate loading
@@ -69,8 +75,10 @@ const Clips: React.FC = ({ page }) => {
                         clip={clip}
                         onSelect={handleClipSelect}
                         page={page}
-                        activetab={activeTab}
+                        activeTab={activeTab}
+                        isSelected={selectedClips.has(clip.id)}
                         onClick={() => console.log("Open clip:", clip.id)}
+                        dropdownRef={dropdownRef}
                     />
                 ))}
             </div>
@@ -81,7 +89,7 @@ const Clips: React.FC = ({ page }) => {
         <div key={section.id} className="mb-12">
             <div className="flex items-center gap-3 mb-6">
                 <h2 className="text-xl font-bold text-white">{section.title}</h2>
-                <span className="text-xl font-medium text-white">{section.count}</span>
+                <span className="text-xl font-medium text-white mb-2">{section.count}</span>
             </div>
             {renderClipsGrid(section.clips)}
         </div>
@@ -125,8 +133,12 @@ const Clips: React.FC = ({ page }) => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + "...";
     };
-    console.log("Current Clips:", mockHighlightsData);
+
     const videoTitle = "Bangladesh vs Bhutan | FIFA Friendly match";
+
+    const handleRefresh = () => {
+        console.log("Refreshed!");
+    };
 
     return (
         <TooltipProvider>
@@ -258,25 +270,7 @@ const Clips: React.FC = ({ page }) => {
                             {/* Right side actions */}
                             <div className="flex items-center gap-4">
                                 {/* Refresh */}
-                                <Button
-                                    variant="outline"
-                                    className="bg-[#252525] border-none text-white hover:bg-[#3A3B3E] h-11 px-4"
-                                >
-                                    <svg
-                                        width="14"
-                                        height="14"
-                                        viewBox="0 0 14 14"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="mr-2"
-                                    >
-                                        <path
-                                            d="M7 0C3.1339 0 0 3.1339 0 7C0 10.8661 3.1339 14 7 14C10.8661 14 14 10.8661 14 7H12.6C12.6 10.0926 10.0926 12.6 7 12.6C3.9074 12.6 1.4 10.0926 1.4 7C1.4 3.9074 3.9074 1.4 7 1.4C8.7248 1.4 10.2676 2.1798 11.2945 3.4055L9.8 4.9H14V0.7L12.2871 2.4122C11.004 0.9352 9.1112 0 7 0Z"
-                                            fill="currentColor"
-                                        />
-                                    </svg>
-                                    Refresh
-                                </Button>
+                                <RefreshButton onClick={handleRefresh} />
 
                                 {/* Limit Dropdown */}
                                 <SearchableSelect
@@ -295,7 +289,7 @@ const Clips: React.FC = ({ page }) => {
                         {/* Filters Sidebar */}
                         <div className="w-80 bg-[#18191B] border-r border-[#252525] flex flex-col">
                             {/* Clip Count above Filters */}
-                            <div className="px-6 py-4 text-center">
+                            {activeTab !== "highlights" && (<div className="px-6 py-4 text-center">
                                 <span className="text-sm text-white">
                                     {selectedCount} of {totalClips} clips selected
                                 </span>
@@ -313,7 +307,7 @@ const Clips: React.FC = ({ page }) => {
                                         Clear
                                     </button>
                                 </div>
-                            </div>
+                            </div>)}
 
                             <ClipFilters page={page} activeTab={activeTab} />
                         </div>
@@ -351,43 +345,12 @@ const Clips: React.FC = ({ page }) => {
                                                 </span>
 
                                                 {/* Pagination next to Total Duration */}
-                                                <div className="flex items-center gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="w-10 h-10 border border-[#252525] rounded-lg hover:bg-[#252525]"
-                                                    >
-                                                        <ChevronLeft className="w-4 h-4 text-white" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="w-10 h-10 bg-[#252525] border border-white rounded-lg"
-                                                    >
-                                                        <span className="text-white text-sm">1</span>
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="w-10 h-10 bg-[#252525] rounded-lg hover:bg-[#3A3B3E]"
-                                                    >
-                                                        <span className="text-white text-sm">...</span>
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="w-10 h-10 bg-[#252525] rounded-lg hover:bg-[#3A3B3E]"
-                                                    >
-                                                        <span className="text-white text-sm">135</span>
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="w-10 h-10 border border-[#252525] rounded-lg hover:bg-[#252525]"
-                                                    >
-                                                        <ChevronRight className="w-4 h-4 text-white" />
-                                                    </Button>
-                                                </div>
+                                                <Pagination
+                                                    currentPage={1}
+                                                    totalPages={135}
+                                                    onPrevious={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                                    onNext={() => setCurrentPage((prev) => Math.min(prev + 1, 135))}
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -396,7 +359,6 @@ const Clips: React.FC = ({ page }) => {
                             {/* Content */}
                             {/* <div className="flex-1 overflow-y-auto p-6"> */}
                             <div className="flex-1 overflow-y-auto p-6 min-h-0">
-
                                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                                     <TabsContent value="clips" className="mt-0">
                                         {loading ? (
@@ -411,11 +373,14 @@ const Clips: React.FC = ({ page }) => {
                                                     <ClipCard
                                                         key={clip.id}
                                                         clip={clip}
+                                                        activeTab={activeTab}
+                                                        page={page}
                                                         isSelected={selectedClips.has(clip.id)}
                                                         onSelect={handleClipSelect}
                                                         onClick={() =>
                                                             console.log("Clip clicked:", clip.id)
                                                         }
+                                                        dropdownRef={dropdownRef}
                                                     />
                                                 ))}
                                             </div>

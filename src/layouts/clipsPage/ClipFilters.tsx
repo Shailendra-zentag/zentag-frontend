@@ -7,12 +7,25 @@ import { StatusSection } from "../../containers/filters/StatusSection";
 import { RatingSection } from "../../containers/filters/RatingSection";
 import { SortBySection } from "../../containers/filters/SortBySection";
 import { Dayjs } from "dayjs";
+import SortDropdown from "@/containers/filters/SortByDropDown";
 
-interface ClipFiltersProps {
-  onFilterChange?: (filters: any) => void;
+interface Filters {
+  searchQuery: string;
+  selectedEvents: string[];
+  selectedAspectRatios: string[];
+  selectedStatus: string[];
+  selectedRatings: string[];
+  sortBy: string;
+  dateRange: [Dayjs | null, Dayjs | null] | null;
 }
 
-const ClipFilters: React.FC<ClipFiltersProps> = ({ onFilterChange }) => {
+interface ClipFiltersProps {
+  activeTab: string;
+  onFilterChange?: (filters: Filters) => void;
+  page: string;
+}
+
+const ClipFilters: React.FC<ClipFiltersProps> = ({ activeTab, page, onFilterChange }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [selectedAspectRatios, setSelectedAspectRatios] = useState<string[]>(
@@ -21,9 +34,9 @@ const ClipFilters: React.FC<ClipFiltersProps> = ({ onFilterChange }) => {
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("time-desc");
-   const [dateRange, setDateRange] = useState<
-      [Dayjs | null, Dayjs | null] | null
-    >(null);
+  const [dateRange, setDateRange] = useState<
+    [Dayjs | null, Dayjs | null] | null
+  >(null);
 
   const handleEventChange = (eventId: string, checked: boolean) => {
     let newSelection: string[];
@@ -86,19 +99,25 @@ const ClipFilters: React.FC<ClipFiltersProps> = ({ onFilterChange }) => {
       <h2 className="text-lg font-bold text-white text-center mb-6">Filters</h2>
 
       {/* Main Search */}
-      <div className="mb-6">
+      {page !== "my-highlights" && (<div className="mb-6">
         <SearchBar
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Search..."
         />
-      </div>
+      </div>)}
 
       {/* Events Section with integrated search */}
-      <EventsSection
-        selectedEvents={selectedEvents}
-        onEventChange={handleEventChange}
-      />
+      {activeTab !== "highlights" && page !== "my-highlights" && (
+        <EventsSection
+          selectedEvents={selectedEvents}
+          onEventChange={handleEventChange}
+        />
+      )}
+
+      {/* Sort Dropdown */}
+      {page === "my-highlights" && (<div className="mb-6"> <SortDropdown value={sortBy} onChange={setSortBy} />
+      </div>)}
 
       {/* Aspect Ratio Section */}
       <AspectRatioSection
@@ -124,12 +143,12 @@ const ClipFilters: React.FC<ClipFiltersProps> = ({ onFilterChange }) => {
         <DateRangeSelector
           value={dateRange}
           onChange={setDateRange}
-          placeholder="Select date range"
+          placeholder={["Start date", "End date"]}
         />
       </div>
 
       {/* Sort By Section */}
-      <SortBySection sortBy={sortBy} onSortChange={setSortBy} />
+      {activeTab !== "highlights" && (<SortBySection sortBy={sortBy} onSortChange={setSortBy} />)}
     </div>
   );
 };

@@ -15,6 +15,7 @@ const Signup = lazy(() => import("./pages/SignupPage"));
 const LoginSSO = lazy(() => import("./pages/SSOPage"));
 const Dashboard = lazy(() => import("./pages/DashboardPage"));
 const Clips = lazy(() => import("./pages/ClipsPage"));
+const MyHighlights = lazy(() => import("./pages/Highlights.tsx"));
 
 type ErrorBoundaryProps = { children: React.ReactNode };
 type ErrorBoundaryState = { hasError: boolean; error: Error | null };
@@ -26,6 +27,7 @@ class ErrorBoundary extends React.Component<
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
+    
   }
 
   static getDerivedStateFromError(error: Error) {
@@ -74,6 +76,7 @@ return (
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/clips" element={<Clips page="clips"/>} />
+                <Route path="/my-highlights" element={<MyHighlights page="my-highlights" />} />
               </Route>
 
               <Route

@@ -33,6 +33,7 @@
 // export default SVGIcon;
 
 import React from "react";
+import add-highlight from "../assets/components/ClipCard/add-highlight.svg";
 
 interface SvgIconProps {
   name: string;
@@ -74,8 +75,6 @@ const SvgIcon: React.FC<SvgIconProps> = ({
     
     // Media Controls
     "three-dots": {
-      width: "30",
-      height: "24",
       viewBox: "0 0 30 24",
       path: (
         <>

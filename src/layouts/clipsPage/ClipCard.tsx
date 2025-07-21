@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, memo } from "react";
+import React, { useState, useRef, useCallback, memo, RefObject } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,11 +15,15 @@ import { IconNames } from "@/assets/icons";
 import { useResponsive } from "@/hooks/useResponsive";
 
 interface ClipCardProps {
+    page: string;
+    activeTab: string;
     clip: ClipData;
     isSelected: boolean;
     onSelect?: (id: string, selected: boolean) => void;
     onClick?: () => void;
     lazyLoad?: boolean;
+    dropdownRef: RefObject<HTMLDivElement>;
+    showDropdown: boolean;
 }
 
 const ClipCard: React.FC<ClipCardProps> = memo(({
@@ -27,18 +31,22 @@ const ClipCard: React.FC<ClipCardProps> = memo(({
     isSelected,
     onSelect,
     onClick,
-    lazyLoad = true
+    lazyLoad = true,
+    activeTab,
+    page,
 }) => {
+
     const [showDropdown, setShowDropdown] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { isMobile, isTablet } = useResponsive();
 
+    // Handle click outside to close dropdown
     const handleDropdownToggle = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
-        setShowDropdown(!showDropdown);
-    }, [showDropdown]);
+        setShowDropdown((prev) => !prev); // Toggle directly
+    }, []);
 
     const handleCheckboxChange = useCallback((checked: boolean) => {
         onSelect?.(clip.id, checked);
@@ -80,7 +88,7 @@ const ClipCard: React.FC<ClipCardProps> = memo(({
                     ${getResponsiveClasses()}
                     `}
                 // ${isSelected ? "ring-2 ring-[#00BBFF]" : ""}
-                style={{ borderRadius: "12px" }}
+                style={{ borderRadius: "12px", overflow: "visible" }}
                 onClick={handleCardClick}
             >
                 <div className="relative">
@@ -90,7 +98,7 @@ const ClipCard: React.FC<ClipCardProps> = memo(({
                             aspect-video bg-gray-700 overflow-hidden relative
                             ${isSelected ? "border-2 border-[#00BBFF] rounded-xl" : ""}
                         `}
-                        style={{ borderRadius: "12px 12px 12px 12px" }}
+                        style={{ borderRadius: "12px 12px 12px 12px", overflow: "visible" }}
                     >
                         {/* Image with loading states */}
                         <div className="relative w-full h-full">
@@ -126,7 +134,7 @@ const ClipCard: React.FC<ClipCardProps> = memo(({
                         </div>
 
                         {/* Checkbox for selection - Absolute positioned in thumbnail corner */}
-                        <div
+                        {activeTab !== "highlights" && page !== "my-highlights" && (<div
                             className="absolute bottom-1 left-2 z-20"
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -135,10 +143,10 @@ const ClipCard: React.FC<ClipCardProps> = memo(({
                                 onCheckedChange={handleCheckboxChange}
                                 className="w-6 h-6 border-2 border-white bg-black/20 backdrop-blur-sm data-[state=checked]:bg-gradient-to-br data-[state=checked]:from-[#00BBFF] data-[state=checked]:to-[#0051FF] data-[state=checked]:border-[#00BBFF]"
                             />
-                        </div>
+                        </div>)}
 
                         {/* Three-dot menu - Top Right */}
-                        <div className="absolute top-2 right-2 z-20" ref={dropdownRef}>
+                        <div className="absolute top-2 right-2 z-5" ref={dropdownRef}>
                             <div
                                 className="cursor-pointer hover:opacity-80 transition-opacity"
                                 style={{ borderRadius: "5px" }}
@@ -156,7 +164,24 @@ const ClipCard: React.FC<ClipCardProps> = memo(({
                                 showDropdown={showDropdown}
                                 setShowDropdown={setShowDropdown}
                                 dropdownRef={dropdownRef}
+                                activeTab={activeTab}
+                                clip={clip}
+                                page={page}
+                                lazyLoad={lazyLoad}
                             />
+
+                        </div>
+                        {/* Duration Badge - Bottom Right */}
+                        <div className="absolute bottom-1 right-2">
+                            <Badge
+                                className="text-xs font-medium px-2 py-1 rounded-md"
+                                style={{
+                                    backgroundColor: "#252525",
+                                    color: "#FFF",
+                                }}
+                            >
+                                {clip.duration}
+                            </Badge>
                         </div>
                     </div>
                 </div>
@@ -249,7 +274,7 @@ const ClipCard: React.FC<ClipCardProps> = memo(({
                         >
                             {clip.timestamp}
                         </Badge>
-                        <Badge
+                        {/* <Badge
                             className="text-xs font-medium px-2 py-1 rounded-md"
                             style={{
                                 backgroundColor: "#252525",
@@ -257,7 +282,7 @@ const ClipCard: React.FC<ClipCardProps> = memo(({
                             }}
                         >
                             {clip.duration}
-                        </Badge>
+                        </Badge> */}
                         <Badge
                             className="text-xs font-medium px-2 py-1 rounded-md"
                             style={{

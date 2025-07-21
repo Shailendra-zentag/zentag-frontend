@@ -1,9 +1,7 @@
 
 import {
   Home,
-  Upload,
   Settings,
-  LogOut,
   User,
   HelpCircle,
   BarChart3,
@@ -12,7 +10,7 @@ import {
   Sun,
 } from "lucide-react";
 
-const CloudIcon = () => (
+export const CloudIcon = () => (
   <svg
     width="21"
     height="18"
@@ -32,7 +30,7 @@ const CloudIcon = () => (
   </svg>
 );
 
-const HighlightsIcon = () => (
+export const HighlightsIcon = () => (
   <svg
     width="22"
     height="16"
@@ -82,10 +80,10 @@ export const dashboardStats = [
 
   //Sidebar items
   export const sidebarItems = [
-  { icon: Home, label: "Home", active: true },
-  { icon: HighlightsIcon, label: "Highlights" },
-  { icon: CloudIcon, label: "Published" },
-  { icon: Settings, label: "Settings" },
+  { icon: Home, label: "Home", path: "/dashboard", active:true},
+  { icon: HighlightsIcon, label: "Highlights", path: "/my-highlights" },
+  { icon: CloudIcon, label: "Published", path: "/published-history" },
+  { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
  export const profileMenuItems = [
